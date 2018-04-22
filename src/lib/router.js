@@ -1,6 +1,6 @@
 
 
-const debug = require('debug')('microservice-kit:amqpkit:router');
+const debug = require('./logger')('microservice-kit:amqpkit:router');
 const Message = require('./message');
 
 

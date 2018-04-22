@@ -4,9 +4,9 @@ const async = require('async-q');
 const _ = require('lodash');
 const amqp = require('amqplib');
 const uuid = require('uuid/v4');
-const debug = require('debug')('microservice-kit:amqpkit');
 const url = require('url');
 
+const debug = require('./lib/logger')('microservice-kit:amqpkit');
 const Message = require('./lib/message');
 const Response = require('./lib/response');
 const Router = require('./lib/router');

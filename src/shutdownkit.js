@@ -1,9 +1,9 @@
 
 
-const debug = require('debug')('microservice-kit:shutdownkit');
 const _ = require('lodash');
 const async = require('async');
 
+const debug = require('./lib/logger')('microservice-kit:shutdownkit');
 
 class ShutdownKit {
   constructor() {
@@ -11,7 +11,6 @@ class ShutdownKit {
     process.stdin.resume();
     this.jobs_ = [];
     this.bindEvents_();
-    this.logger_ = null;
     this.isShuttingDown = false;
   }
 
@@ -40,7 +39,7 @@ class ShutdownKit {
      * @param {Error} err
      */
   onUncaughtException_(err) {
-    this.log_('error', 'Uncaught Exception received!', err);
+    debug('error', 'Uncaught Exception received!', err);
     this.gracefulShutdown();
   }
 
@@ -49,7 +48,7 @@ class ShutdownKit {
      * On SIGTERM
      */
   onSigTerm_() {
-    this.log_('info', 'SIGTERM received!');
+    debug('info', 'SIGTERM received!');
     this.gracefulShutdown();
   }
 
@@ -58,7 +57,7 @@ class ShutdownKit {
      * On SIGINT
      */
   onSigInt_() {
-    this.log_('info', 'SIGINT received!');
+    debug('info', 'SIGINT received!');
     this.gracefulShutdown();
   }
 
@@ -70,12 +69,12 @@ class ShutdownKit {
     // TODO: Add a timeout maybe?
     if (this.isShuttingDown) return;
     this.isShuttingDown = true;
-    this.log_('info', 'Trying to shutdown gracefully...');
+    debug('info', 'Trying to shutdown gracefully...');
     async.series(this.jobs_.reverse(), (err) => {
       if (err) {
-        this.log_('error', 'Some jobs failed', err);
-        this.log_('info', 'Quiting anyway...');
-      } else { this.log_('info', 'All jobs done, quiting...'); }
+        debug('error', 'Some jobs failed', err);
+        debug('info', 'Quiting anyway...');
+      } else { debug('info', 'All jobs done, quiting...'); }
 
       this.exit_();
     });
@@ -86,32 +85,8 @@ class ShutdownKit {
      * Exists current process.
      */
   exit_() {
-    this.log_('info', 'Bye!');
+    debug('info', 'Bye!');
     process.exit();
-  }
-
-
-  /**
-     * Sets additional logger.
-     * @param {Function} logger
-     */
-  setLogger(logger) {
-    if (!_.isFunction(logger)) { return false; }
-
-    this.logger_ = logger;
-    return true;
-  }
-
-
-  /**
-     * Log methods. It uses debug module but also custom logger method if exists.
-     */
-  log_() {
-    debug(...arguments);
-
-    if (!_.isFunction(this.logger_)) { return; }
-
-    this.logger_.apply(null, arguments);
   }
 }
 

@@ -1,7 +1,8 @@
 
 
-const debug = require('debug')('microservice-kit:lib:rpc');
 const _ = require('lodash');
+
+const debug = require('./logger')('microservice-kit:lib:rpc');
 const Response = require('./response');
 const Queue = require('./queue');
 

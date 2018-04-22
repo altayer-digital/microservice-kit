@@ -1,9 +1,10 @@
 
 
-const debug = require('debug')('microservice-kit:lib:exchange');
 const async = require('async-q');
 const _ = require('lodash');
 const uuid = require('uuid/v4');
+
+const debug = require('./logger')('microservice-kit:lib:exchange');
 const Message = require('./message');
 const Response = require('./response');
 

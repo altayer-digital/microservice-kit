@@ -1,11 +1,10 @@
 
 
 const _ = require('lodash');
-const fs = require('fs');
 const uuid = require('uuid/v4');
-const debug = require('debug')('microservice-kit:microservicekit');
 const Chance = require('chance');
 
+const debug = require('./lib/logger')('microservice-kit:microservicekit');
 const AmqpKit = require('./amqpkit');
 const ShutdownKit = require('./shutdownkit');
 
@@ -16,8 +15,6 @@ class MicroserviceKit {
     this.id = `${new Chance().first().toLowerCase()}-${uuid().split('-')[0]}`;
     this.amqpKit = null;
     this.shutdownKit = ShutdownKit;
-
-    if (_.isFunction(this.options_.shutdown.logger)) { this.shutdownKit.setLogger(this.options_.shutdown.logger); }
   }
 
 
