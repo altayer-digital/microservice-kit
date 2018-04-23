@@ -1,6 +1,6 @@
-'use strict';
+
 
 module.exports = {
-    InternalError: require('./internalerror'),
-    ClientError: require('./clienterror')
+  InternalError: require('./internalerror'),
+  ClientError: require('./clienterror'),
 };
