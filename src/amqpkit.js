@@ -5,6 +5,7 @@ const _ = require('lodash');
 const amqp = require('amqplib');
 const uuid = require('uuid/v4');
 const url = require('url');
+const promiseRetry = require('promise-retry');
 
 const debug = require('./lib/logger')('microservice-kit:amqpkit');
 const Message = require('./lib/message');
@@ -53,6 +54,10 @@ class AmqpKit {
       });
     }
 
+    return this.attemptConnection();
+  }
+
+  doSetup() {
     return amqp
       .connect(this.options_.url, this.options_.connectionOptions)
       .then((connection) => {
@@ -86,6 +91,16 @@ class AmqpKit {
       });
   }
 
+  attemptConnection() {
+    return promiseRetry((retry, number) => {
+      debug('attempt#', number);
+      return this.doSetup()
+        .catch(retry);
+    }, {
+      retries: 3,
+      minTimeout: 5000
+    });
+  }
 
   /**
      * Bind rabbitmq's connection events.
