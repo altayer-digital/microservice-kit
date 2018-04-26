@@ -26,6 +26,7 @@ class AmqpKit {
     this.options_ = _.assign({}, this.defaults, opt_options || {});
 
     this.connection = null;
+    this.connectionIsClosing = false;
     this.channel = null;
     this.rpc_ = null;
     this.queues_ = {};
@@ -54,7 +55,7 @@ class AmqpKit {
       });
     }
 
-    return this.attemptConnection();
+    return this.attemptConnection(1);
   }
 
   doSetup() {
@@ -76,6 +77,9 @@ class AmqpKit {
       })
       .then((channels) => {
         this.channel = channels[0];
+        this.channel.on('close',() => {
+          debug('closing channel');
+        });
         this.bindEvents();
         return this;
       })
@@ -91,16 +95,27 @@ class AmqpKit {
       });
   }
 
-  attemptConnection() {
-    return promiseRetry((retry, number) => {
-      debug('attempt#', number);
-      return this.doSetup()
-        .catch(retry);
-    }, {
-      retries: 3,
-      minTimeout: 5000
-    });
+  attemptConnection(waitInsec) {
+    ShutdownKit.jobs_ = [];
+    return this.wait(waitInsec)
+      .then(() => {
+        return promiseRetry((retry, number) => {
+          debug('attempt#', number);
+          return this.doSetup()
+            .catch(retry);
+        }, {
+          retries: 3,
+          minTimeout: 5000
+        });
+      });
   }
+
+  wait(timeInMs) {
+    return new Promise(function(resolve) {
+      debug(`wait: stalling for ${timeInMs}`);
+      return setTimeout(resolve, timeInMs);
+    });
+  };
 
   /**
      * Bind rabbitmq's connection events.
@@ -108,7 +123,10 @@ class AmqpKit {
   bindEvents() {
     this.connection.on('close', () => {
       debug('connection closed');
-      ShutdownKit.gracefulShutdown();
+      this.connection = null;
+      this.channel = null;
+      this.attemptConnection(2000)
+        .catch(() => ShutdownKit.gracefulShutdown())
     });
 
     this.connection.on('error', (err) => {
@@ -117,15 +135,23 @@ class AmqpKit {
 
     this.connection.on('blocked', () => {
       debug('connection blocked');
+      this.attemptConnection()
+        .catch(() => ShutdownKit.gracefulShutdown())
     });
 
     this.connection.on('unblocked', () => {
-      debug('connection blocked');
+      debug('connection unblocked');
+      this.attemptConnection()
+        .catch(() => ShutdownKit.gracefulShutdown())
     });
 
     ShutdownKit.addJob((done) => {
-      debug('Closing connection...');
+      debug('Closing connection...', this.connectionIsClosing);
+      if(this.connectionIsClosing) {
+        return;
+      }
       try {
+        this.connectionIsClosing = true;
         this.connection
           .close()
           .then(() => {

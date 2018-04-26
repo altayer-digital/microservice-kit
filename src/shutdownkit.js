@@ -70,7 +70,8 @@ class ShutdownKit {
     if (this.isShuttingDown) return;
     this.isShuttingDown = true;
     debug('info', 'Trying to shutdown gracefully...');
-    async.series(this.jobs_.reverse(), (err) => {
+    const timeoutSeries = async.timeout(async.series, 10000);
+    timeoutSeries(this.jobs_.reverse(), (err) => {
       if (err) {
         debug('error', 'Some jobs failed', err);
         debug('info', 'Quiting anyway...');
