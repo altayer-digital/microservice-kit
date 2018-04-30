@@ -24,9 +24,12 @@ class AmqpKit {
      */
   constructor(opt_options) {
     this.options_ = _.assign({}, this.defaults, opt_options || {});
+    this.initializeFields();
+  }
 
+  initializeFields() {
     this.connection = null;
-    this.connectionIsClosing = false;
+    this.connectionShouldClose = false;
     this.channel = null;
     this.rpc_ = null;
     this.queues_ = {};
@@ -96,6 +99,10 @@ class AmqpKit {
   }
 
   attemptConnection(waitInsec) {
+    if (this.connectionShouldClose) {
+      return;
+    }
+    waitInsec = waitInsec || 2000;
     ShutdownKit.jobs_ = [];
     return this.wait(waitInsec)
       .then(() => {
@@ -123,9 +130,8 @@ class AmqpKit {
   bindEvents() {
     this.connection.on('close', () => {
       debug('connection closed');
-      this.connection = null;
-      this.channel = null;
-      this.attemptConnection(2000)
+      this.initializeFields();
+      this.attemptConnection()
         .catch(() => ShutdownKit.gracefulShutdown())
     });
 
@@ -146,12 +152,12 @@ class AmqpKit {
     });
 
     ShutdownKit.addJob((done) => {
-      debug('Closing connection...', this.connectionIsClosing);
-      if(this.connectionIsClosing) {
+      debug('Closing connection due to SIGx...', this.connectionShouldClose);
+      if(this.connectionShouldClose) {
         return;
       }
       try {
-        this.connectionIsClosing = true;
+        this.connectionShouldClose = true;
         this.connection
           .close()
           .then(() => {
