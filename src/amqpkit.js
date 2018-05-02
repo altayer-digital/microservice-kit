@@ -119,7 +119,7 @@ class AmqpKit {
 
   wait(timeInMs) {
     return new Promise(function(resolve) {
-      debug(`wait: stalling for ${timeInMs}`);
+      debug(`wait: ${timeInMs} ms`);
       return setTimeout(resolve, timeInMs);
     });
   };
@@ -152,7 +152,7 @@ class AmqpKit {
     });
 
     ShutdownKit.addJob((done) => {
-      debug('Closing connection due to SIGx...', this.connectionShouldClose);
+      debug('info','Closing connection due to SIGx...');
       if(this.connectionShouldClose) {
         return;
       }

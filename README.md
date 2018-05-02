@@ -33,7 +33,7 @@ Name|Type|Description
 ----|----|-----------
 options.type="microservice"|String|Type of the microservice. This name will be used as prefix in generating unique name. This is helpful when differentiating microservice instances.
 options.amqp|Object|This object will be pass to AmqpKit when creating instance. See AmqpKit's docs for detail.
-[options.shutdown.logger=null]|Function|This function will be passed into `ShutdownKit.setLogger` method.
+[options.shutdown.killTimeout=Infinity]|Number|This Number will be passed into `ShutdownKit.setOptions` method.
 
 ##### Sample
 
@@ -49,6 +49,9 @@ const microserviceKit = new MicroserviceKit({
             }
         ],
         exchanges: []
+    },
+    shutdown: {
+      killTimeout: "Infinity"
     }
 });
 ```

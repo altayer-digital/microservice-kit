@@ -12,8 +12,19 @@ class ShutdownKit {
     this.jobs_ = [];
     this.bindEvents_();
     this.isShuttingDown = false;
+    this.defaultOptions_ = {
+      killTimeout: Infinity,
+    };
+    this.options_ = {};
   }
 
+  /***
+   * set options
+   * @param opt_options
+   */
+  setoptions(opt_options) {
+    this.options_ = Object.assign({}, this.defaultOptions_, _.pick(this.defaultOptions_, opt_options));
+  }
 
   /**
      * Add a job to graceful shutdown process.
@@ -31,6 +42,9 @@ class ShutdownKit {
     process.on('uncaughtException', this.onUncaughtException_.bind(this));
     process.on('SIGTERM', this.onSigTerm_.bind(this));
     process.on('SIGINT', this.onSigInt_.bind(this));
+    process.on('exit', () => {
+      debug('info', 'Processing is exiting...');
+    });
   }
 
 
@@ -66,11 +80,19 @@ class ShutdownKit {
      * Tries to do all the jobs before shutdown.
      */
   gracefulShutdown() {
-    // TODO: Add a timeout maybe?
     if (this.isShuttingDown) return;
     this.isShuttingDown = true;
+    ['SIGTERM', 'SIGINT'].forEach((signal) => {
+      process.removeAllListeners(signal);
+    });
+
     debug('info', 'Trying to shutdown gracefully...');
-    const timeoutSeries = async.timeout(async.series, 10000);
+    let timeoutSeries = async.series;
+    const killTimeout = parseFloat(this.options_.killTimeout);
+    debug('info', `will be destroyed in ${killTimeout} ms`);
+    if (killTimeout < Infinity) {
+      timeoutSeries = async.timeout(async.series, killTimeout);
+    }
     timeoutSeries(this.jobs_.reverse(), (err) => {
       if (err) {
         debug('error', 'Some jobs failed', err);
@@ -86,8 +108,8 @@ class ShutdownKit {
      * Exists current process.
      */
   exit_() {
-    debug('info', 'Bye!');
-    process.exit();
+    debug('info', 'Bye!', process.pid);
+    process.kill(process.pid, 'SIGKILL');
   }
 }
 

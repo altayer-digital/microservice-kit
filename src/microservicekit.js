@@ -20,7 +20,7 @@ class MicroserviceKit {
 
   init() {
     if (!this.options_.amqp) { return Promise.resolve(); }
-
+    this.shutdownKit.setoptions(this.options_.shutdown);
     const amqpOptions = _.assign({}, this.options_.amqp, { id: this.getName() });
     this.amqpKit = new AmqpKit(amqpOptions);
     return this.amqpKit.init();
@@ -37,7 +37,7 @@ MicroserviceKit.prototype.defaults = {
   type: 'microservice',
   amqp: {},
   shutdown: {
-    logger: null,
+    killTimeout: Infinity,
   },
 };
 
