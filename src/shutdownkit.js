@@ -7,8 +7,6 @@ const debug = require('./lib/logger')('microservice-kit:shutdownkit');
 
 class ShutdownKit {
   constructor() {
-    // Force resume node process!
-    process.stdin.resume();
     this.jobs_ = [];
     this.bindEvents_();
     this.isShuttingDown = false;
