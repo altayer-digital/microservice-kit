@@ -1,4 +1,4 @@
-# microservice-kit
+# microservice-kit-atg
 
 Utility belt for building microservices.
 
@@ -9,21 +9,21 @@ This is a fork by SignAlive's version to add the package to NPM and to add Boom 
 
 ## Quick Start
 
-- Install using `yarn add microservice-kit`
-- Check out [/demo](https://github.com/signalive/microservice-kit/tree/master/demo) folder
+- Install using `yarn add microservice-kit-atg`
+- Check out [/demo](https://github.com/signalive/microservice-kit-atg/tree/master/demo) folder
 - [A boilerplate for your new microservice](https://github.com/signalive/microservice-boilerplate)
 
 # API Reference
 
 ## Class MicroserviceKit
 
-This is the main class, the entry point to microservice-kit. To use it, you just need to import microservice-kit:
+This is the main class, the entry point to microservice-kit-atg. To use it, you just need to import microservice-kit-atg:
 
 ```javascript
-const MicroserviceKit = require('microservice-kit');
+const MicroserviceKit = require('microservice-kit-atg');
 ```
 
-To create an instance, look at constructor below. A microservice-kit instance is simply collection of an AmqpKit and a ShutdownKit instances.
+To create an instance, look at constructor below. A microservice-kit-atg instance is simply collection of an AmqpKit and a ShutdownKit instances.
 
 #### `new MicroserviceKit(options={})`
 
@@ -102,7 +102,7 @@ This is the AmqpKit class aims to help communication over RabbitMQ. Main feature
 AmqpKit uses `amqplib` in barebones. Look at [its documentation](http://www.squaremobius.net/amqp.node/channel_api.html). We will refer this page a lot.
 
 ```javascript
-const AmqpKit = require('microservice-kit').AmqpKit;
+const AmqpKit = require('microservice-kit-atg').AmqpKit;
 ```
 
 You can reach AmqpKit class like above. However, if you create a MicroserviceKit instance you don't need to reach AmqpKit. An AmqpKit instance will be automatically created for you.
@@ -356,9 +356,9 @@ This class helps us to catch interrupt signals, uncaught exceptions and tries to
 
 ```javascript
 // Direct access
-const shutdownKit = require('microservice-kit').ShutdownKit;
+const shutdownKit = require('microservice-kit-atg').ShutdownKit;
 
-// Or from microservice-kit instance
+// Or from microservice-kit-atg instance
 const microserviceKit = new MicroserviceKit({...});
 console.log(microserviceKit.shutdownKit);
 ```
