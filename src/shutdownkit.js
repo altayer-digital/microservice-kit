@@ -21,7 +21,9 @@ class ShutdownKit {
    * @param opt_options
    */
   setoptions(opt_options) {
-    this.options_ = Object.assign({}, this.defaultOptions_, _.pick(this.defaultOptions_, opt_options));
+    const defaultKeys = _.keys(this.defaultOptions_);
+    const filteredOptions = _.pick(opt_options, defaultKeys)
+    this.options_ = Object.assign({}, this.defaultOptions_, filteredOptions);
   }
 
   /**
